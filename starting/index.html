@@ -3,11 +3,52 @@
   <head>
     <title>WebGL Tests</title>
     <script language="javascript">
+      function createShader(gl, str, type) {
+      var shader = gl.createShader(type);
+      gl.shaderSource(shader, str);
+      gl.compileShader(shader);
+      return shader;
+      }
+      function createProgram(gl, vstr, fstr) {
+          var program = gl.createProgram();
+      var vshader = createShader(gl, vstr, gl.VERTEX_SHADER);
+      var fshader = createShader(gl, fstr, gl.FRAGMENT_SHADER);
+      gl.attachShader(program, vshader);
+      gl.attachShader(program, fshader);
+      gl.linkProgram(program);
+      return program;
+      }
+      function x(t) {
+      return Math.sin(2*t)*Math.cos(t);
+      }
+      function y(t) {
+      return Math.sin(2*t)*Math.sin(t);
+      }
       function main() {
       var canvas = document.getElementById('omg-webgl');
       var gl = canvas.getContext('experimental-webgl', {antialias: true, stencil: true});
       gl.clearColor(0,0,0,1);
       gl.clear(gl.COLOR_BUFFER_BIT);
+      var vertexPosBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+      var vertices = [];
+      var steps = 120;
+      var dt = (2*Math.PI)/(steps-1);
+      var t = -Math.PI;
+      for (var i = 0; i<steps; ++i) {
+                               vertices.push(x(t));
+                               vertices.push(y(t));
+          t += dt;
+                               }
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+      var vs = 'attribute vec2 pos;void main() {gl_Position = vec4(pos, 0,1);}';
+      var fs = 'precision mediump float;void main() {gl_FragColor=vec4(0.4,0.9,0,1);}';
+      var program = createProgram(gl, vs, fs);
+      gl.useProgram(program);
+      program.vertexPosAttrib = gl.getAttribLocation(program, 'pos');
+      gl.enableVertexAttribArray(program.vertexPosAttrib);
+      gl.vertexAttribPointer(program.vertexPosAttrib, 2, gl.FLOAT, false, 0,0);
+      gl.drawArrays(gl.LINE_STRIP, 0, vertices.length/2);
       }
     </script>
   </head>

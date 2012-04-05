@@ -1,0 +1,17 @@
+<doctype html>
+<html>
+  <head>
+    <title>WebGL Tests</title>
+    <script language="javascript">
+      function main() {
+      var canvas = document.getElementById('omg-webgl');
+      var gl = canvas.getContext('experimental-webgl', {antialias: true, stencil: true});
+      gl.clearColor(0,0,0,1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      }
+    </script>
+  </head>
+  <body onload="main()">
+    <canvas id="omg-webgl" width="800" height="800"/>
+  </body>
+</html>

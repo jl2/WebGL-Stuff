@@ -16,6 +16,9 @@
 
 // Simple WebGL version of the "game of life"
 
+
+// createShader and createProgram came from
+// http://dev.opera.com/articles/view/raw-webgl-part1-getting-started/
 function createShader(gl, str, type) {
     var shader = gl.createShader(type);
     gl.shaderSource(shader, str);
@@ -34,8 +37,9 @@ function createProgram(gl, vstr, fstr) {
 }
 
 function mapPoint(x,y, width, height) {
-    return [x*(2.0/width)-1,
-            y*(2.0/height)-1]
+    // Map a point from 0<x<width, 0<y<height to the range
+    // -1<x<1, -1<y<1
+    return [x*(2.0/width)-1, y*(2.0/height)-1]
 }
 
 function countNeighbors(i,j) {
@@ -43,6 +47,8 @@ function countNeighbors(i,j) {
     var h = mats[curMat][0].length;
 
     var num = 0;
+    
+    // Wrap around the edges of the matrix
     var up = i-1>0 ? -1 + i : -1 + h;
     var down = (i+1 <h-1) ? 1 + i : 0;
     var left = (j-1>0 ? -1 + j : -1 + w);
@@ -57,15 +63,18 @@ function countNeighbors(i,j) {
     num += mats[curMat][down][left];
     num += mats[curMat][down][right];
     return num;
-
 }
+
+// Compute the next iteration of the game board
 function evolve() {
+    // Save to the other matrix
     var nmat = curMat
     if (curMat ==0) {
         nmat = 1
     } else {
         nmat = 0
     }
+    // Lop through and compute the other matrix
     for (var i=0;i<mats[curMat].length;++i){
         for (var j=0;j<mats[curMat][i].length;++j) {
             var num = countNeighbors(i,j);
@@ -76,16 +85,20 @@ function evolve() {
             }
         }
     }
+    // Make the other matrix the current one
     curMat = nmat
 }
+
 function draw() {
+    // Could probably do most of this one time on initialization...
     var canvas = document.getElementById('omg-webgl');
     var gl = canvas.getContext('experimental-webgl');
 
     gl.clearColor(0,0,0,1);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    width = canvas.width
-    height = canvas.height
+    
+    var width = canvas.width
+    var height = canvas.height
     gl.viewport(0,0,width, height)
     
     var vs = 'attribute vec2 pos; void main() { gl_Position = vec4(pos, 0,1); }';
@@ -97,6 +110,7 @@ function draw() {
     var vertexPosBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
 
+    // Compute the triangles
     var vertices = new Array(mats[0].length*mats[0].length*6)
     var dx = canvas.width/mats[0].length
     var dy = canvas.height/mats[0].length
@@ -107,33 +121,44 @@ function draw() {
         cy = 0
         for (j=0;j<mats[curMat][0].length; ++j) {
             if (mats[curMat][i][j]) {
-                
+
+                // A quad made of 2 triangles
+
+                // First point of first tri
                 np = mapPoint(cx,cy, width, height)
                 vertices[curvx+0] = np[0]
                 vertices[curvx+1] = np[1]
 
+                // Second point
                 np = mapPoint(cx+dx, cy, width, height)
                 vertices[curvx+2] = np[0]
                 vertices[curvx+3] = np[1]
+                // Reuse this point for the second tri
                 vertices[curvx+6] = np[0]
                 vertices[curvx+7] = np[1]
-                
+
+                // Third point
                 np = mapPoint(cx, cy+dy, width, height)
                 vertices[curvx+4] = np[0]
                 vertices[curvx+5] = np[1]
+                // Reuse this point for the second tri
                 vertices[curvx+8] = np[0]
                 vertices[curvx+9] = np[1]
-                
+
+                // Third point of the second tri
                 np = mapPoint(cx+dx, cy+dy, width, height)
                 vertices[curvx+10] = np[0]
                 vertices[curvx+11] = np[1]
 
+                // Update index into vertex array
                 curvx+=12
             }
             cy += dy
         }
         cx += dx
     }
+    
+    // Draw it
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     program.vertexPosAttrib = gl.getAttribLocation(program, 'pos');
     gl.enableVertexAttribArray(program.vertexPosAttrib);

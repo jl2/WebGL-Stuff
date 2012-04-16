@@ -93,7 +93,6 @@ function draw() {
     // Could probably do most of this one time on initialization...
     var canvas = document.getElementById('omg-webgl');
     var gl = canvas.getContext('experimental-webgl');
-
     gl.clearColor(0,0,0,1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
@@ -178,6 +177,13 @@ function tick() {
 }
 
 function main() {
+    var canvas = document.getElementById('omg-webgl');
+    var gl = canvas.getContext('experimental-webgl');
+    if (!gl) {
+        alert("Your browser does not wupport WebGL!");
+        return;
+    }
+
     numFrames = 0
     startTime = new Date().getTime();
     var num = 100
@@ -192,5 +198,6 @@ function main() {
             mats[curMat][i][j] = Math.random()>0.5
         }
     }
+    
     tick()
 }

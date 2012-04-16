@@ -180,10 +180,10 @@ function main() {
     var canvas = document.getElementById('omg-webgl');
     var gl = canvas.getContext('experimental-webgl');
     if (!gl) {
-        alert("Your browser does not wupport WebGL!");
+        alert("Your browser does not support WebGL!");
         return;
     }
-
+    alert(canvas.width)
     numFrames = 0
     startTime = new Date().getTime();
     var num = 100
